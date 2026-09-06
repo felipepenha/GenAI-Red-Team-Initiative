@@ -1,4 +1,4 @@
-.PHONY: help install sync lock build up down test test-client ollama-pull ollama-serve run-gradio-headless stop-gradio format mypy clean
+.PHONY: help install sync lock build up down test test-unit test-client ollama-pull ollama-serve run-gradio-headless stop-gradio format mypy clean
 
 # Default target
 help:
@@ -8,6 +8,7 @@ help:
 	@echo "  make up                    - Run the built container"
 	@echo "  make down                  - Stop and remove the container"
 	@echo "  make test                  - Test the health endpoint"
+	@echo "  make test-unit             - Run offline unit tests (no container or model)"
 	@echo "  make test-client           - Run automated prompt tests from config/prompts.toml"
 	@echo "  make clean                 - Clean up containers and images"
 	@echo ""
@@ -100,6 +101,10 @@ test: sync lock clean ollama-serve ollama-pull build up
 	done; \
 	echo " ❌ Server did not become healthy in time"; \
 	exit 1
+
+test-unit: sync
+	@echo "🧪 Running offline unit tests (no container or model)..."
+	PYTHONPATH=. uv run pytest tests/
 
 test-client: sync lock clean ollama-serve ollama-pull build up test
 	podman exec mem_app_container uv run python client/main.py
