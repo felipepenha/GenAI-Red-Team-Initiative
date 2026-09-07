@@ -18,7 +18,7 @@ The lab covers **6 lessons** spanning baseline verification through persistent f
 
 ---
 
-## Critical Architectural Findings (JDP-2026-005)
+## Critical Architectural Findings
 
 ### 1. The Serialization Boundary Flaw
 

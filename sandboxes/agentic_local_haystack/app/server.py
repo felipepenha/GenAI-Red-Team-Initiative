@@ -3,7 +3,7 @@
 OWASP GenAI Red Team Lab - Haystack Serialization Evasion Sandbox
 Target: haystack-ai==2.27.0
 Vulnerability: unsafe flag bypass via from_dict()/from_yaml()
-Reference: JDP-2026-005
+Reference: https://jdp-security.github.io/security-research-papers/2026-05-13-deepset-haystack-disclosure.html
 """
 
 import json
