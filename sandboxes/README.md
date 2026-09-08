@@ -22,9 +22,13 @@ The goal of these sandboxes is to provide ready-to-use, isolated environments wh
 
 *   **`llm_local_localAI_v2.17.1/`**: A sandbox environment deploying a vulnerable instance of **LocalAI v2.17.1** for testing a critical tarslip vulnerability (CVE-2024-6868), which allows arbitrary file writes leading to Remote Code Execution (RCE).
 
+*   **`llm_memory_local/`**: A local sandbox environment for testing conversation memory poisoning vulnerabilities. It demonstrates how an attacker can instruct an LLM to persist unscoped facts in SQLite memory, which systematically influences future sessions initiated by other users.
+
 *   **`agentic_local_n8n_v1.65.0/`**: A vulnerable n8n sandbox (version 1.65.0) specifically configured to demonstrate critical vulnerabilities such as **Ni8mare (CVE-2026-21858)** (Unauthenticated RCE) and **CVE-2026-21877** (n8n Remote Code Execution via File Write). It features a "misconfigured" setup with all nodes enabled and network exposure, making it an ideal target for practicing exploitation techniques like manual RCE and workflow manipulation in an agentic workflow automation tool.
 
 *   **`agentic_local_semantickernel/`**: A containerized sandbox running **Microsoft Semantic Kernel v1.48.0** demonstrating **6 active CVE-2026-25592 path traversal bypass techniques** via Type Confusion (CWE-843). The sandbox includes a deliberately vulnerable `FilePlugin` with dual-mode operation: **UNHARDENED** (no filter) and **HARDENED** (`PathSanitizationFilter` via `LAB_HARDENED=true`). Also demonstrates **CWE-1039** (AutoInvoke) exploitation and **Commit `fa2d52f6`** ("Shell Blinding") bypass — Microsoft cosmetic output masking that masks paths from LLM output but does not prevent the underlying file write. Reference: [JDP-2026-001](https://jdp-security.github.io/security-research-papers/2026-04-28-semantic-kernel-disclosure.html) — CVSS 10.0 Critical.
+
+*   **`agentic_local_langchain/`**: A containerized sandbox running **LangChain-core v1.2.24 through latest** (tested up to v1.6.0) demonstrating critical Insecure Orchestration vulnerabilities (CVE-2026-34070, CVE-2023-36258, and unpatched `.save()` write primitive).
 
 ## Usage
 

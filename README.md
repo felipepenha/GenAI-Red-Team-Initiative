@@ -33,17 +33,20 @@ The [Legacy Repository](https://github.com/OWASP/www-project-top-10-for-large-la
 ├── exploitation
 │   ├── AdversarialGenerator
 │   ├── agent0
+│   ├── embedding_inversion
 │   ├── example
 │   ├── garak
 │   ├── haystack
+│   ├── langchain
 │   ├── Langflow_v1.0.12
 │   ├── LangGrinch
-│   ├── langchain
 │   ├── LocalAI_v2.17.1
+│   ├── memory_poisoning
 │   ├── n8n_RCE_via_file_write
 │   ├── Ni8mare
+│   ├── promptfoo
 │   ├── semantickernel
-│   └── promptfoo
+│   └── system_reconnaissance
 ├── LICENSE
 ├── README.md
 ├── sandboxes
@@ -56,14 +59,20 @@ The [Legacy Repository](https://github.com/OWASP/www-project-top-10-for-large-la
 │   ├── llm_local_langchain_core_v1.2.4
 │   ├── llm_local_langflow_v1.0.12
 │   ├── llm_local_localAI_v2.17.1
+│   ├── llm_memory_local
 │   ├── mcp_local
 │   ├── RAG_local
 │   └── README.md
 └── tutorials
     ├── community_resources.md
+    ├── evaluation_framework_passk
+    ├── fake_testing_mode_prompt_injection_tutorial.md
+    ├── langchain_orchestration_poisoning_tutorial.md
     ├── llm_chatbot_system_prompt_exfiltration.md
+    ├── multi_technique_guardrail_bypass_evaluation.md
     ├── multi_turn_safety_bypass_and_system_role_override.md
     ├── README.md
+    ├── semantickernel_orchestration_security_tutorial.md
     └── tools.md
 ```
 
@@ -196,6 +205,8 @@ uv --version
 
 *   **[Haystack Serialization Evasion Sandbox](sandboxes/agentic_local_haystack/README.md)**
     *   **Summary**: A containerized sandbox running **Deepset Haystack (`haystack-ai` v2.27.0)** demonstrating a **critical Serialization Boundary Evasion vulnerability**. The `default_from_dict()` deserialization method passes all `init_parameters` directly to component constructors without stripping security-critical flags, allowing an attacker to bypass the `unsafe=False` boundary and achieve persistent Remote Code Execution (RCE) via Jinja2 SSTI breakout. The sandbox exposes a Flask API with `/chat` (pipeline loading) and `/verify` (integrity check) endpoints. Both `OutputAdapter` and `ConditionalRouter` components are affected. Reference: [JDP-2026-005](https://jdp-security.github.io/security-research-papers/2026-05-13-deepset-haystack-disclosure.html) — CVSS 10.0 Critical.
+*   **[LLM Memory Local Sandbox](sandboxes/llm_memory_local/README.md)**
+    *   **Summary**: A local sandbox environment for testing conversation memory poisoning vulnerabilities. It demonstrates how an attacker can instruct an LLM to persist unscoped facts in SQLite memory, which systematically influences future sessions initiated by other users.
 
 ### `exploitation/`
 
@@ -214,6 +225,15 @@ uv --version
 
 *   **[Promptfoo Scanner Example](exploitation/promptfoo/README.md)**
     *   **Summary**: A powerful red teaming setup using [Promptfoo](https://www.promptfoo.dev/). It runs automated probes to identify vulnerabilities such as PII leakage and prompt injection, providing detailed reports and regression testing capabilities.
+
+*   **[System Reconnaissance](exploitation/system_reconnaissance/README.md)**
+    *   **Summary**: A repeatable bilingual (English and Turkish) reconnaissance campaign for existing local sandboxes. It probes nine disclosure surfaces, records conservative evidence labels, and produces machine-readable JSONL plus reviewer-friendly Markdown reports.
+
+*   **[Embedding Inversion Attack](exploitation/embedding_inversion/README.md)**
+    *   **Summary**: A complete, end-to-end example of an embedding inversion attack against the `RAG_local` sandbox. It reconstructs plaintext from a leaked, metadata-stripped embedding vector using only black-box access to the embedding model API and an LLM-guided guess-and-check loop.
+
+*   **[Conversation Memory Poisoning Exploit](exploitation/memory_poisoning/README.md)**
+    *   **Summary**: A complete, end-to-end example of a conversation memory poisoning attack against the `llm_memory_local` sandbox. It demonstrates how an attacker can plant malicious facts in shared memory to cross-contaminate and hijack future user sessions.
 
 *   **[Langflow Exploitation](exploitation/Langflow_v1.0.12/README.md)**
     *   **Summary**: Details the discovery and exploitation of **CVE-2024-37014** (RCE via Custom Component) in the Langflow sandbox, demonstrating how an attacker can execute arbitrary system commands or establish a reverse shell.
@@ -293,6 +313,18 @@ uv --version
 
 *   **[Multi-Vector LLM Safety Bypass](tutorials/multi_turn_safety_bypass_and_system_role_override.md)**
     * **Summary**: Field observations of a six-stage attack chain demonstrating four distinct classes of LLM safety bypass (such as control token injection and role-label spoofing) observed against production chatbot deployments during independent testing.
+
+*   **[Fake Testing-Mode Prompt Injection](tutorials/fake_testing_mode_prompt_injection_tutorial.md)**
+    * **Summary**: An anonymized case study of a direct prompt-injection guardrail bypass using fabricated evaluation authority and user-defined controls, mapped to OWASP LLM01:2025 and MITRE ATLAS.
+
+*   **[Pass@k Evaluation & Severity Scoring Layer](tutorials/evaluation_framework_passk/README.md)**
+    * **Summary**: A small, tool-agnostic evaluation and severity-scoring layer for red-team results. It computes per-trial attack success rates over k trials with Wilson confidence intervals, enforces the N-reroll rule, handles bounded null results, and maps findings to OWASP LLM and MITRE ATLAS.
+
+*   **[LangChain Orchestration Poisoning Tutorial](tutorials/langchain_orchestration_poisoning_tutorial.md)**
+    * **Summary**: A deep-dive tutorial covering the exploitation and remediation of Insecure Orchestration vulnerabilities in LangChain-core (CVE-2026-34070 path traversal and CVE-2023-36258 symlink suffix bypass).
+
+*   **[Semantic Kernel Orchestration Security Tutorial](tutorials/semantickernel_orchestration_security_tutorial.md)**
+    * **Summary**: A comprehensive tutorial analyzing the 6 Type Confusion bypass vectors for CVE-2026-25592 and AutoInvoke Shell Blinding (CWE-1039) in Microsoft Semantic Kernel.
 
 
 ## Contribution Guide
