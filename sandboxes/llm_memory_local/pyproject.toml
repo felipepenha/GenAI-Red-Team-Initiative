@@ -19,5 +19,9 @@ dev = [
     "black",
     "isort",
     "mypy",
+    "pytest",
     "types-requests",
 ]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]

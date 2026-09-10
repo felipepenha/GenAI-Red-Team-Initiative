@@ -213,6 +213,7 @@ Run `make help` to see all commands:
 
 **Testing:**
 - `make test` - Full setup + health check
+- `make test-unit` - Run offline unit tests for the memory module (no container or model)
 - `make test-client` - Run automated prompt tests
 
 **UI:**
