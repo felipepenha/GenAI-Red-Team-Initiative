@@ -13,8 +13,10 @@ The sandbox supports direct integration with 6 popular LLM providers via their n
 | **Anthropic** | `anthropic` | `ANTHROPIC_API_KEY` | - | `claude-3-5-haiku-latest` |
 | **Google Gemini** | `google-genai` | `GEMINI_API_KEY` | `GOOGLE_API_KEY` | `gemini-2.5-flash` |
 | **Mistral AI** | `mistralai` | `MISTRAL_API_KEY` | - | `mistral-small-latest` |
-| **OpenRouter** | `openai` | `OPENROUTER_API_KEY` | - | `meta-llama/llama-3.3-70b-instruct` |
-| **TrueFoundry** | `openai` | `TRUEFOUNDRY_API_KEY` | `TFY_API_KEY` | `openai/gpt-4o-mini` |
+| **OpenRouter** | `openrouter` | `OPENROUTER_API_KEY` | - | `meta-llama/llama-3.3-70b-instruct` |
+| **TrueFoundry** | `openai`* | `TRUEFOUNDRY_API_KEY` | `TFY_API_KEY` | `openai/gpt-4o-mini` |
+
+> *\* **Note on TrueFoundry**: TrueFoundry's AI Gateway is built from the ground up as an OpenAI-compatible API gateway. TrueFoundry's platform SDK (`truefoundry-sdk` / `truefoundry`) manages Kubernetes workloads, deployments, and ML tracking, but does not provide an LLM completion client. TrueFoundry's official documentation, playground, and tutorials prescribe using the standard `openai` SDK configured with `base_url="https://gateway.truefoundry.ai"`.*
 
 ---
 
