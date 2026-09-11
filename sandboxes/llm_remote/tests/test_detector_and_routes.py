@@ -226,3 +226,233 @@ def test_chat_completions_mock_call():
             data["choices"][0]["message"]["content"]
             == "Hello! I am a remote LLM response."
         )
+
+
+def test_openai_provider_mock_sdk():
+    """Verify OpenAIProvider correctly invokes openai SDK and formats response."""
+    os.environ["OPENAI_API_KEY"] = "mock-key"
+    provider = OpenAIProvider()
+
+    mock_resp = MagicMock()
+    mock_resp.model_dump.return_value = {
+        "id": "chatcmpl-openai-mock",
+        "object": "chat.completion",
+        "created": 1700000000,
+        "model": "gpt-4o-mini",
+        "choices": [
+            {
+                "index": 0,
+                "message": {"role": "assistant", "content": "OpenAI mock reply"},
+                "finish_reason": "stop",
+            }
+        ],
+        "usage": {
+            "prompt_tokens": 10,
+            "completion_tokens": 20,
+            "total_tokens": 30,
+        },
+    }
+
+    with patch.object(
+        provider.client.chat.completions, "create", return_value=mock_resp
+    ) as mock_create:
+        req = ChatCompletionRequest(messages=[{"role": "user", "content": "hello"}])
+        res = provider.chat_completion(req)
+
+        assert res["choices"][0]["message"]["content"] == "OpenAI mock reply"
+        assert res["usage"]["total_tokens"] == 30
+        mock_create.assert_called_once()
+
+
+def test_anthropic_provider_mock_sdk():
+    """Verify AnthropicProvider parses system messages and extracts content from blocks."""
+    os.environ["ANTHROPIC_API_KEY"] = "mock-key"
+    provider = AnthropicProvider()
+
+    mock_block = MagicMock()
+    mock_block.text = "Anthropic mock reply"
+
+    mock_resp = MagicMock()
+    mock_resp.content = [mock_block]
+    mock_resp.usage.input_tokens = 15
+    mock_resp.usage.output_tokens = 25
+    mock_resp.stop_reason = "end_turn"
+
+    with patch.object(
+        provider.client.messages, "create", return_value=mock_resp
+    ) as mock_create:
+        req = ChatCompletionRequest(
+            messages=[
+                {"role": "system", "content": "You are a test helper."},
+                {"role": "user", "content": "hi anthropic"},
+            ],
+            temperature=0.5,
+            max_tokens=500,
+        )
+        res = provider.chat_completion(req)
+
+        assert res["choices"][0]["message"]["content"] == "Anthropic mock reply"
+        assert res["choices"][0]["finish_reason"] == "end_turn"
+        assert res["usage"]["prompt_tokens"] == 15
+        assert res["usage"]["completion_tokens"] == 25
+        assert res["usage"]["total_tokens"] == 40
+
+        # Check call arguments
+        call_kwargs = mock_create.call_args[1]
+        assert call_kwargs["system"] == "You are a test helper."
+        assert call_kwargs["messages"] == [{"role": "user", "content": "hi anthropic"}]
+        assert call_kwargs["max_tokens"] == 500
+        assert call_kwargs["temperature"] == 0.5
+
+
+def test_gemini_provider_mock_sdk():
+    """Verify GeminiProvider translates contents, system instruction, and formats response."""
+    os.environ["GEMINI_API_KEY"] = "mock-key"
+    provider = GeminiProvider()
+
+    mock_candidate = MagicMock()
+    mock_candidate.finish_reason = "STOP"
+
+    mock_resp = MagicMock()
+    mock_resp.text = "Gemini mock reply"
+    mock_resp.usage_metadata.prompt_token_count = 12
+    mock_resp.usage_metadata.candidates_token_count = 18
+    mock_resp.candidates = [mock_candidate]
+
+    with patch.object(
+        provider.client.models, "generate_content", return_value=mock_resp
+    ) as mock_gen:
+        req = ChatCompletionRequest(
+            messages=[
+                {"role": "system", "content": "System directive"},
+                {"role": "user", "content": "hello gemini"},
+                {"role": "assistant", "content": "prior model response"},
+                {"role": "user", "content": "follow-up"},
+            ]
+        )
+        res = provider.chat_completion(req)
+
+        assert res["choices"][0]["message"]["content"] == "Gemini mock reply"
+        assert res["usage"]["prompt_tokens"] == 12
+        assert res["usage"]["completion_tokens"] == 18
+        assert res["usage"]["total_tokens"] == 30
+        mock_gen.assert_called_once()
+
+
+def test_mistral_provider_mock_sdk():
+    """Verify MistralProvider invokes chat.complete and dumps result."""
+    os.environ["MISTRAL_API_KEY"] = "mock-key"
+    provider = MistralProvider()
+
+    mock_resp = MagicMock()
+    mock_resp.model_dump.return_value = {
+        "id": "mistral-mock-123",
+        "object": "chat.completion",
+        "created": 1700000001,
+        "model": "mistral-small-latest",
+        "choices": [
+            {
+                "index": 0,
+                "message": {"role": "assistant", "content": "Mistral mock reply"},
+                "finish_reason": "stop",
+            }
+        ],
+        "usage": {
+            "prompt_tokens": 8,
+            "completion_tokens": 14,
+            "total_tokens": 22,
+        },
+    }
+
+    with patch.object(
+        provider.client.chat, "complete", return_value=mock_resp
+    ) as mock_complete:
+        req = ChatCompletionRequest(
+            messages=[{"role": "user", "content": "hi mistral"}]
+        )
+        res = provider.chat_completion(req)
+
+        assert res["choices"][0]["message"]["content"] == "Mistral mock reply"
+        mock_complete.assert_called_once()
+
+
+def test_openrouter_provider_mock_sdk():
+    """Verify OpenRouterProvider invokes official openrouter SDK chat.send."""
+    os.environ["OPENROUTER_API_KEY"] = "mock-key"
+    provider = OpenRouterProvider()
+
+    mock_resp = MagicMock()
+    mock_resp.model_dump.return_value = {
+        "id": "gen-openrouter-123",
+        "object": "chat.completion",
+        "created": 1700000002,
+        "model": "meta-llama/llama-3.3-70b-instruct",
+        "choices": [
+            {
+                "index": 0,
+                "message": {
+                    "role": "assistant",
+                    "content": "OpenRouter native mock reply",
+                },
+                "finish_reason": "stop",
+            }
+        ],
+        "usage": {
+            "prompt_tokens": 20,
+            "completion_tokens": 30,
+            "total_tokens": 50,
+        },
+    }
+
+    with patch.object(
+        provider.client.chat, "send", return_value=mock_resp
+    ) as mock_send:
+        req = ChatCompletionRequest(
+            messages=[{"role": "user", "content": "hi openrouter"}]
+        )
+        res = provider.chat_completion(req)
+
+        assert res["choices"][0]["message"]["content"] == "OpenRouter native mock reply"
+        mock_send.assert_called_once()
+
+
+def test_truefoundry_provider_mock_sdk():
+    """Verify TrueFoundryProvider invokes OpenAI SDK with TrueFoundry gateway endpoint."""
+    os.environ["TRUEFOUNDRY_API_KEY"] = "mock-key"
+    provider = TrueFoundryProvider()
+
+    mock_resp = MagicMock()
+    mock_resp.model_dump.return_value = {
+        "id": "chatcmpl-tfy-mock",
+        "object": "chat.completion",
+        "created": 1700000003,
+        "model": "openai/gpt-4o-mini",
+        "choices": [
+            {
+                "index": 0,
+                "message": {
+                    "role": "assistant",
+                    "content": "TrueFoundry gateway mock reply",
+                },
+                "finish_reason": "stop",
+            }
+        ],
+        "usage": {
+            "prompt_tokens": 7,
+            "completion_tokens": 11,
+            "total_tokens": 18,
+        },
+    }
+
+    with patch.object(
+        provider.client.chat.completions, "create", return_value=mock_resp
+    ) as mock_create:
+        req = ChatCompletionRequest(
+            messages=[{"role": "user", "content": "hi truefoundry"}]
+        )
+        res = provider.chat_completion(req)
+
+        assert (
+            res["choices"][0]["message"]["content"] == "TrueFoundry gateway mock reply"
+        )
+        mock_create.assert_called_once()
