@@ -12,6 +12,16 @@ from typing import Any, Dict, List
 
 import requests
 
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv()
+    _env_f = Path(__file__).resolve().parent.parent / ".env"
+    if _env_f.is_file():
+        load_dotenv(dotenv_path=_env_f)
+except ImportError:
+    pass
+
 if sys.version_info >= (3, 11):
     import tomllib
 else:

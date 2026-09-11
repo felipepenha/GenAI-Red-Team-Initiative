@@ -19,7 +19,7 @@ class GeminiProvider(BaseLLMProvider):
     def __init__(
         self,
         vendor_name: str = "gemini",
-        model_name: str = "gemini-2.5-flash",
+        model_name: str = "gemini-3.6-flash",
         api_key: str = "",
         **kwargs: Any,
     ) -> None:

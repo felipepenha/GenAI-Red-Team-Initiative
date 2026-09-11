@@ -11,7 +11,7 @@ The sandbox supports direct integration with 6 popular LLM providers via their n
 |---|---|---|---|---|
 | **OpenAI** | `openai` | `OPENAI_API_KEY` | - | `gpt-4o-mini` |
 | **Anthropic** | `anthropic` | `ANTHROPIC_API_KEY` | - | `claude-3-5-haiku-latest` |
-| **Google Gemini** | `google-genai` | `GEMINI_API_KEY` | `GOOGLE_API_KEY` | `gemini-2.5-flash` |
+| **Google Gemini** | `google-genai` | `GEMINI_API_KEY` | `GOOGLE_API_KEY` | `gemini-3.6-flash` |
 | **Mistral AI** | `mistralai` | `MISTRAL_API_KEY` | - | `mistral-small-latest` |
 | **OpenRouter** | `openrouter` | `OPENROUTER_API_KEY` | - | `meta-llama/llama-3.3-70b-instruct` |
 | **TrueFoundry** | `openai`* | `TRUEFOUNDRY_API_KEY` | `TFY_API_KEY` | `openai/gpt-4o-mini` |

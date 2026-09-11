@@ -6,6 +6,17 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
+try:
+    from dotenv import load_dotenv
+
+    # Load from current working directory or sandbox root
+    load_dotenv()
+    _sandbox_env_file = Path(__file__).resolve().parent.parent.parent / ".env"
+    if _sandbox_env_file.is_file():
+        load_dotenv(dotenv_path=_sandbox_env_file)
+except ImportError:
+    pass
+
 if sys.version_info >= (3, 11):
     import tomllib
 else:
@@ -179,7 +190,7 @@ def detect_active_vendor_and_model(
         fallbacks = {
             "openai": "gpt-4o-mini",
             "anthropic": "claude-3-5-haiku-latest",
-            "gemini": "gemini-2.5-flash",
+            "gemini": "gemini-3.6-flash",
             "mistral": "mistral-small-latest",
             "openrouter": "meta-llama/llama-3.3-70b-instruct",
             "truefoundry": "openai/gpt-4o-mini",
