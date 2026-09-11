@@ -1,0 +1,35 @@
+# Model Configuration for Remote LLM Sandbox
+# 
+# To change which vendor and model is used, edit the [default] section below,
+# or override using environment variables:
+#   LLM_VENDOR = "auto" | "openai" | "anthropic" | "gemini" | "mistral" | "openrouter" | "truefoundry"
+#   LLM_MODEL  = "<model_name>"
+
+[default]
+# "auto" detects the active vendor based on present API keys in environment variables.
+# Alternatively, pin explicitly to: "openai", "anthropic", "gemini", "mistral", "openrouter", "truefoundry"
+vendor = "auto"
+
+# Optional global model override (if set, takes precedence over per-vendor model)
+# model = "gpt-4o-mini"
+
+[openai]
+model = "gpt-4o-mini"
+base_url = "https://api.openai.com/v1"
+
+[anthropic]
+model = "claude-3-5-haiku-latest"
+
+[gemini]
+model = "gemini-3.6-flash"
+
+[mistral]
+model = "mistral-small-latest"
+
+[openrouter]
+model = "meta-llama/llama-3.3-70b-instruct"
+base_url = "https://openrouter.ai/api/v1"
+
+[truefoundry]
+model = "openai/gpt-4o-mini"
+base_url = "https://gateway.truefoundry.ai"

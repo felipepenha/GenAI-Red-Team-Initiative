@@ -55,6 +55,7 @@ The [Legacy Repository](https://github.com/OWASP/www-project-top-10-for-large-la
 │   ├── agentic_local_n8n_v1.65.0
 │   ├── agentic_local_semantickernel
 │   ├── llm_local
+│   ├── llm_remote
 │   ├── llm_local_InvokeAI_v5.3.0
 │   ├── llm_local_langchain_core_v1.2.4
 │   ├── llm_local_langflow_v1.0.12
@@ -178,6 +179,9 @@ uv --version
     *   **Summary**: A lightweight local sandbox that mocks an OpenAI-compatible LLM API using Ollama. Ideal for testing client-side interactions and prompt injection vulnerabilities without external costs.
     *   **Sub-guides**:
         *   [Adding New Mock Services](sandboxes/llm_local/app/mocks/README.md): Guide for extending the sandbox with new API mocks.
+
+*   **[LLM Remote Sandbox](sandboxes/llm_remote/README.md)**
+    *   **Summary**: A remote sandbox environment exposing an OpenAI-compatible API gateway that interfaces with commercial cloud LLM providers (OpenAI, Anthropic, Gemini, Mistral, OpenRouter, TrueFoundry) using their native SDKs directly. Designed for Red Teaming remote APIs, evaluating safety guardrails, testing prompt injection, and assessing model behaviors in production-like environments with vendor auto-detection and key pinning.
 
 *   **[Local MCP Sandbox](sandboxes/mcp_local/README.md)**
     *   **Summary**: A local sandbox environment incorporating the Model Context Protocol (MCP) to simulate tool integrations. It includes a mock API gateway using FastAPI, a mock MCP server, and Ollama integration to test agentic workflows and tool-calling behaviors.
