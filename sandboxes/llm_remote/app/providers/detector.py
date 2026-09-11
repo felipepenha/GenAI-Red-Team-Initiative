@@ -17,6 +17,25 @@ try:
 except ImportError:
     pass
 
+
+def _normalize_environ() -> None:
+    """Normalize environment variables by stripping leading/trailing whitespace and surrounding quotes."""
+    for k, v in list(os.environ.items()):
+        clean_k = k.strip()
+        clean_v = v.strip()
+        if (clean_v.startswith('"') and clean_v.endswith('"')) or (
+            clean_v.startswith("'") and clean_v.endswith("'")
+        ):
+            clean_v = clean_v[1:-1].strip()
+        if clean_k != k:
+            os.environ.pop(k, None)
+            os.environ[clean_k] = clean_v
+        elif clean_v != v:
+            os.environ[k] = clean_v
+
+
+_normalize_environ()
+
 if sys.version_info >= (3, 11):
     import tomllib
 else:
@@ -72,6 +91,7 @@ def get_detected_vendor_keys() -> Dict[str, str]:
     Returns:
         Dict[str, str]: Mapping of vendor_name -> detected env_var_name.
     """
+    _normalize_environ()
     detected: Dict[str, str] = {}
     for vendor, env_vars in VENDOR_KEY_MAPPING.items():
         for var_name in env_vars:
@@ -84,11 +104,12 @@ def get_detected_vendor_keys() -> Dict[str, str]:
 
 def resolve_vendor_credential(vendor: str) -> str:
     """Retrieve API key for specified vendor or raise an error."""
+    _normalize_environ()
     env_vars = VENDOR_KEY_MAPPING.get(vendor, [])
     for var in env_vars:
         val = os.getenv(var)
         if val and val.strip():
-            return val.strip()
+            return val.strip().strip("'\"")
 
     vars_str = " or ".join(env_vars)
     raise VendorConfigurationError(

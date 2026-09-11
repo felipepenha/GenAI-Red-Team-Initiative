@@ -26,7 +26,7 @@ def get_server_status() -> Tuple[str, str]:
     return "disconnected", "unknown"
 
 
-def chat_with_llm(message: str, history: List[Any]) -> str:
+def chat(message: str, history: List[Any]) -> str:
     """Process user message through the remote LLM sandbox API and return response.
 
     Args:
@@ -85,10 +85,13 @@ def chat_with_llm(message: str, history: List[Any]) -> str:
         )
 
 
+# Backwards compatibility alias
+chat_with_llm = chat
+
 vendor, model = get_server_status()
 
 demo = gr.ChatInterface(
-    fn=chat_with_llm,
+    fn=chat,
     title="🛡️ LLM Remote Sandbox - Red Teaming Interface",
     description=(
         f"Interactive chat interface connected to **LLM Remote Sandbox**.<br>"

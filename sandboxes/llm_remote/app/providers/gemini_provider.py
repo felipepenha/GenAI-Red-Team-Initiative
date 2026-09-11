@@ -25,9 +25,13 @@ class GeminiProvider(BaseLLMProvider):
     ) -> None:
         super().__init__(vendor_name=vendor_name, model_name=model_name, **kwargs)
         resolved_key = (
-            api_key
-            or os.getenv("GEMINI_API_KEY", "")
-            or os.getenv("GOOGLE_API_KEY", "")
+            (
+                api_key
+                or os.getenv("GEMINI_API_KEY", "")
+                or os.getenv("GOOGLE_API_KEY", "")
+            )
+            .strip()
+            .strip("'\"")
         )
         self.client = genai.Client(api_key=resolved_key)
 

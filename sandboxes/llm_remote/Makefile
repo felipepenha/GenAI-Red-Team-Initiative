@@ -23,6 +23,10 @@ ENV_FORWARD = \
 	-e LLM_MODEL \
 	-e SANDBOX_API_KEY
 
+MAKEFILE_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
+ENV_FILE := $(MAKEFILE_DIR).env
+ENV_FILE_FLAG ?= $(shell [ -f $(ENV_FILE) ] && echo "--env-file $(ENV_FILE)")
+
 # Default target
 help:
 	@echo "LLM Remote Sandbox - Available Commands:"
@@ -71,6 +75,7 @@ up:
 	podman run -d --name $(CONTAINER_NAME) \
 		-p 8000:8000 \
 		--network $(NETWORK_NAME) \
+		$(ENV_FILE_FLAG) \
 		$(ENV_FORWARD) \
 		$(IMAGE_NAME)
 	@echo "✅ Container started!"
@@ -122,6 +127,7 @@ run-gradio-headless: sync lock clean build up test
 		-p 7860:7860 \
 		-e SANDBOX_API_URL="http://$(CONTAINER_NAME):8000" \
 		-e SANDBOX_API_KEY="sk-mock-key" \
+		$(ENV_FILE_FLAG) \
 		$(ENV_FORWARD) \
 		--entrypoint uv \
 		$(IMAGE_NAME) \
