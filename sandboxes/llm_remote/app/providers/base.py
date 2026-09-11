@@ -37,6 +37,32 @@ class ChatCompletionRequest(BaseModel):
     )
 
 
+def sanitize_credential(value: Any) -> str:
+    """Sanitize API keys or credential strings.
+
+    Strips leading and trailing whitespace as well as single or double quotes
+    that might be injected by Docker/Podman .env file parsers.
+    """
+    if not value:
+        return ""
+    cleaned = str(value).strip()
+    while (cleaned.startswith('"') and cleaned.endswith('"')) or (
+        cleaned.startswith("'") and cleaned.endswith("'")
+    ):
+        cleaned = cleaned[1:-1].strip()
+    return cleaned
+
+
+def sanitize_url(value: Any) -> Optional[str]:
+    """Sanitize base URL strings by stripping whitespace, quotes, and trailing slashes."""
+    if not value:
+        return None
+    cleaned = sanitize_credential(value)
+    if not cleaned:
+        return None
+    return cleaned.rstrip("/")
+
+
 def format_openai_chat_response(
     model: str,
     content: str,

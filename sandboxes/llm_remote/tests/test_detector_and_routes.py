@@ -9,7 +9,11 @@ from fastapi.testclient import TestClient
 from app.main import app
 from app.providers import get_provider
 from app.providers.anthropic_provider import AnthropicProvider
-from app.providers.base import ChatCompletionRequest
+from app.providers.base import (
+    ChatCompletionRequest,
+    sanitize_credential,
+    sanitize_url,
+)
 from app.providers.detector import (
     VENDOR_KEY_MAPPING,
     VendorConfigurationError,
@@ -456,3 +460,97 @@ def test_truefoundry_provider_mock_sdk():
             res["choices"][0]["message"]["content"] == "TrueFoundry gateway mock reply"
         )
         mock_create.assert_called_once()
+
+
+def test_sanitize_helpers():
+    """Verify sanitize_credential and sanitize_url handle various dirty inputs."""
+    assert sanitize_credential(None) == ""
+    assert sanitize_credential("") == ""
+    assert sanitize_credential("   sk-clean   ") == "sk-clean"
+    assert sanitize_credential('"sk-quoted"') == "sk-quoted"
+    assert sanitize_credential("'sk-single-quoted'") == "sk-single-quoted"
+    assert sanitize_credential('  "  sk-spaced-quote  "  ') == "sk-spaced-quote"
+    assert sanitize_credential('""sk-double-quoted""') == "sk-double-quoted"
+
+    assert sanitize_url(None) is None
+    assert sanitize_url("") is None
+    assert sanitize_url("https://api.openai.com/v1/") == "https://api.openai.com/v1"
+    assert (
+        sanitize_url(' "https://gateway.truefoundry.ai/" ')
+        == "https://gateway.truefoundry.ai"
+    )
+
+
+@pytest.mark.parametrize(
+    "vendor,env_key,raw_value,expected_clean",
+    [
+        ("openai", "OPENAI_API_KEY", '  "sk-openai-key"  ', "sk-openai-key"),
+        ("anthropic", "ANTHROPIC_API_KEY", "  'sk-ant-key'  ", "sk-ant-key"),
+        ("anthropic", "ANTHROPIC_AUTH_TOKEN", '  "sk-ant-token"  ', "sk-ant-token"),
+        ("gemini", "GEMINI_API_KEY", '  "aiza-gemini-key"  ', "aiza-gemini-key"),
+        ("gemini", "GOOGLE_API_KEY", "  'aiza-google-key'  ", "aiza-google-key"),
+        ("mistral", "MISTRAL_API_KEY", '  "mistral-api-key"  ', "mistral-api-key"),
+        ("openrouter", "OPENROUTER_API_KEY", '  "sk-or-key"  ', "sk-or-key"),
+        (
+            "truefoundry",
+            "TRUEFOUNDRY_API_KEY",
+            '  "tfy-secret-key"  ',
+            "tfy-secret-key",
+        ),
+        ("truefoundry", "TFY_API_KEY", "  'tfy-short-key'  ", "tfy-short-key"),
+    ],
+)
+def test_all_vendors_key_sanitization(vendor, env_key, raw_value, expected_clean):
+    """Verify that every vendor's credentials are sanitized even when loaded with quotes and spaces."""
+    os.environ[env_key] = raw_value
+    active_vendor, _, _ = detect_active_vendor_and_model()
+    assert active_vendor == vendor
+
+
+def test_all_providers_instantiation_with_dirty_env():
+    """Verify that all 6 provider classes instantiate cleanly when given dirty keys/URLs."""
+    # OpenAI
+    p_openai = OpenAIProvider(
+        api_key='  "sk-test-openai"  ',
+        base_url='  "https://mock.openai.com/v1/"  ',
+    )
+    assert p_openai.client.api_key == "sk-test-openai"
+    assert str(p_openai.client.base_url).rstrip("/") == "https://mock.openai.com/v1"
+
+    # Anthropic
+    p_anthropic = AnthropicProvider(
+        api_key='  "sk-test-anthropic"  ',
+        base_url='  "https://mock.anthropic.com/v1/"  ',
+    )
+    assert p_anthropic.client.api_key == "sk-test-anthropic"
+
+    # Gemini
+    p_gemini = GeminiProvider(
+        api_key='  "aiza-test-gemini"  ',
+    )
+    assert p_gemini.client._api_client.api_key == "aiza-test-gemini"
+
+    # Mistral
+    p_mistral = MistralProvider(
+        api_key='  "test-mistral"  ',
+        base_url='  "https://mock.mistral.ai/v1/"  ',
+    )
+    assert p_mistral.vendor_name == "mistral"
+
+    # OpenRouter
+    p_openrouter = OpenRouterProvider(
+        api_key='  "sk-or-test"  ',
+        base_url='  "https://openrouter.ai/api/v1/"  ',
+    )
+    assert p_openrouter.vendor_name == "openrouter"
+
+    # TrueFoundry
+    p_truefoundry = TrueFoundryProvider(
+        api_key='  "tfy-test"  ',
+        base_url='  "https://gateway.truefoundry.ai/"  ',
+    )
+    assert p_truefoundry.client.api_key == "tfy-test"
+    assert (
+        str(p_truefoundry.client.base_url).rstrip("/")
+        == "https://gateway.truefoundry.ai"
+    )

@@ -6,6 +6,8 @@ import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
+from app.providers.base import sanitize_credential, sanitize_url
+
 try:
     from dotenv import load_dotenv
 
@@ -22,11 +24,7 @@ def _normalize_environ() -> None:
     """Normalize environment variables by stripping leading/trailing whitespace and surrounding quotes."""
     for k, v in list(os.environ.items()):
         clean_k = k.strip()
-        clean_v = v.strip()
-        if (clean_v.startswith('"') and clean_v.endswith('"')) or (
-            clean_v.startswith("'") and clean_v.endswith("'")
-        ):
-            clean_v = clean_v[1:-1].strip()
+        clean_v = sanitize_credential(v)
         if clean_k != k:
             os.environ.pop(k, None)
             os.environ[clean_k] = clean_v
@@ -46,7 +44,7 @@ logger = logging.getLogger(__name__)
 # Mapping of vendor name to potential environment variable names for API keys
 VENDOR_KEY_MAPPING: Dict[str, List[str]] = {
     "openai": ["OPENAI_API_KEY"],
-    "anthropic": ["ANTHROPIC_API_KEY"],
+    "anthropic": ["ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN"],
     "gemini": ["GEMINI_API_KEY", "GOOGLE_API_KEY"],
     "mistral": ["MISTRAL_API_KEY"],
     "openrouter": ["OPENROUTER_API_KEY"],
@@ -109,7 +107,7 @@ def resolve_vendor_credential(vendor: str) -> str:
     for var in env_vars:
         val = os.getenv(var)
         if val and val.strip():
-            return val.strip().strip("'\"")
+            return sanitize_credential(val)
 
     vars_str = " or ".join(env_vars)
     raise VendorConfigurationError(
@@ -218,4 +216,10 @@ def detect_active_vendor_and_model(
         }
         selected_model = fallbacks.get(selected_vendor, "gpt-4o-mini")
 
-    return selected_vendor, selected_model, vendor_section
+    sanitized_vendor_section = dict(vendor_section)
+    if "base_url" in sanitized_vendor_section:
+        sanitized_vendor_section["base_url"] = sanitize_url(
+            sanitized_vendor_section["base_url"]
+        )
+
+    return selected_vendor, selected_model, sanitized_vendor_section

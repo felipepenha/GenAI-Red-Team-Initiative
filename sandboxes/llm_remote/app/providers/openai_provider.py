@@ -5,7 +5,12 @@ from typing import Any, Dict
 
 from openai import OpenAI
 
-from app.providers.base import BaseLLMProvider, ChatCompletionRequest
+from app.providers.base import (
+    BaseLLMProvider,
+    ChatCompletionRequest,
+    sanitize_credential,
+    sanitize_url,
+)
 
 
 class OpenAIProvider(BaseLLMProvider):
@@ -20,17 +25,14 @@ class OpenAIProvider(BaseLLMProvider):
         **kwargs: Any,
     ) -> None:
         super().__init__(vendor_name=vendor_name, model_name=model_name, **kwargs)
-        resolved_key = api_key or os.getenv("OPENAI_API_KEY", "")
-        resolved_base_url = (
-            base_url
-            or os.getenv("OPENAI_BASE_URL", "")
-            or kwargs.get("base_url")
-            or None
+        resolved_key = sanitize_credential(api_key or os.getenv("OPENAI_API_KEY", ""))
+        resolved_base_url = sanitize_url(
+            base_url or os.getenv("OPENAI_BASE_URL", "") or kwargs.get("base_url")
         )
-        self.client = OpenAI(
-            api_key=resolved_key,
-            base_url=resolved_base_url,
-        )
+        init_kwargs: Dict[str, Any] = {"api_key": resolved_key}
+        if resolved_base_url:
+            init_kwargs["base_url"] = resolved_base_url
+        self.client = OpenAI(**init_kwargs)
 
     def chat_completion(self, request: ChatCompletionRequest) -> Dict[str, Any]:
         """Execute chat completion request via openai SDK."""

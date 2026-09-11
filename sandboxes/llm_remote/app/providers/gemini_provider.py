@@ -10,6 +10,7 @@ from app.providers.base import (
     BaseLLMProvider,
     ChatCompletionRequest,
     format_openai_chat_response,
+    sanitize_credential,
 )
 
 
@@ -24,14 +25,10 @@ class GeminiProvider(BaseLLMProvider):
         **kwargs: Any,
     ) -> None:
         super().__init__(vendor_name=vendor_name, model_name=model_name, **kwargs)
-        resolved_key = (
-            (
-                api_key
-                or os.getenv("GEMINI_API_KEY", "")
-                or os.getenv("GOOGLE_API_KEY", "")
-            )
-            .strip()
-            .strip("'\"")
+        resolved_key = sanitize_credential(
+            api_key
+            or os.getenv("GEMINI_API_KEY", "")
+            or os.getenv("GOOGLE_API_KEY", "")
         )
         self.client = genai.Client(api_key=resolved_key)
 

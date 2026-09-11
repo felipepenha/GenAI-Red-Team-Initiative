@@ -5,7 +5,12 @@ from typing import Any, Dict
 
 from openai import OpenAI
 
-from app.providers.base import BaseLLMProvider, ChatCompletionRequest
+from app.providers.base import (
+    BaseLLMProvider,
+    ChatCompletionRequest,
+    sanitize_credential,
+    sanitize_url,
+)
 
 
 class TrueFoundryProvider(BaseLLMProvider):
@@ -20,16 +25,18 @@ class TrueFoundryProvider(BaseLLMProvider):
         **kwargs: Any,
     ) -> None:
         super().__init__(vendor_name=vendor_name, model_name=model_name, **kwargs)
-        resolved_key = (
+        resolved_key = sanitize_credential(
             api_key
             or os.getenv("TRUEFOUNDRY_API_KEY", "")
             or os.getenv("TFY_API_KEY", "")
         )
         resolved_base_url = (
-            base_url
-            or os.getenv("TRUEFOUNDRY_BASE_URL", "")
-            or os.getenv("TFY_BASE_URL", "")
-            or kwargs.get("base_url")
+            sanitize_url(
+                base_url
+                or os.getenv("TRUEFOUNDRY_BASE_URL", "")
+                or os.getenv("TFY_BASE_URL", "")
+                or kwargs.get("base_url")
+            )
             or "https://gateway.truefoundry.ai"
         )
         self.client = OpenAI(

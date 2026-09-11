@@ -5,7 +5,12 @@ from typing import Any, Dict
 
 from openrouter import OpenRouter
 
-from app.providers.base import BaseLLMProvider, ChatCompletionRequest
+from app.providers.base import (
+    BaseLLMProvider,
+    ChatCompletionRequest,
+    sanitize_credential,
+    sanitize_url,
+)
 
 
 class OpenRouterProvider(BaseLLMProvider):
@@ -20,12 +25,11 @@ class OpenRouterProvider(BaseLLMProvider):
         **kwargs: Any,
     ) -> None:
         super().__init__(vendor_name=vendor_name, model_name=model_name, **kwargs)
-        resolved_key = api_key or os.getenv("OPENROUTER_API_KEY", "")
-        resolved_base_url = (
-            base_url
-            or os.getenv("OPENROUTER_BASE_URL", "")
-            or kwargs.get("base_url")
-            or None
+        resolved_key = sanitize_credential(
+            api_key or os.getenv("OPENROUTER_API_KEY", "")
+        )
+        resolved_base_url = sanitize_url(
+            base_url or os.getenv("OPENROUTER_BASE_URL", "") or kwargs.get("base_url")
         )
         init_kwargs: Dict[str, Any] = {"api_key": resolved_key}
         if resolved_base_url:

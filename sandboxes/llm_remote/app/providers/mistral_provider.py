@@ -9,6 +9,8 @@ from app.providers.base import (
     BaseLLMProvider,
     ChatCompletionRequest,
     format_openai_chat_response,
+    sanitize_credential,
+    sanitize_url,
 )
 
 
@@ -20,11 +22,18 @@ class MistralProvider(BaseLLMProvider):
         vendor_name: str = "mistral",
         model_name: str = "mistral-small-latest",
         api_key: str = "",
+        base_url: str = "",
         **kwargs: Any,
     ) -> None:
         super().__init__(vendor_name=vendor_name, model_name=model_name, **kwargs)
-        resolved_key = api_key or os.getenv("MISTRAL_API_KEY", "")
-        self.client = Mistral(api_key=resolved_key)
+        resolved_key = sanitize_credential(api_key or os.getenv("MISTRAL_API_KEY", ""))
+        resolved_base_url = sanitize_url(
+            base_url or os.getenv("MISTRAL_BASE_URL", "") or kwargs.get("base_url")
+        )
+        init_kwargs: Dict[str, Any] = {"api_key": resolved_key}
+        if resolved_base_url:
+            init_kwargs["server_url"] = resolved_base_url
+        self.client = Mistral(**init_kwargs)
 
     def chat_completion(self, request: ChatCompletionRequest) -> Dict[str, Any]:
         """Execute chat completion request via mistralai SDK."""
