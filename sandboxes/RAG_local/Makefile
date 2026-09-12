@@ -116,6 +116,8 @@ run-gradio-headless: sync lock clean ollama-pull ollama-serve build up test test
 		-e OPENAI_BASE_URL="http://app_container:8000/v1" \
 		-e S3_BASE_URL="http://app_container:8000/s3" \
 		-e PINECONE_BASE_URL="http://app_container:8000/pinecone" \
+		-e NO_PROXY="host.containers.internal,app_container" \
+		-e no_proxy="host.containers.internal,app_container" \
 		--entrypoint uv \
 		app_container_build \
 		run python client/gradio_app.py
