@@ -1,8 +1,10 @@
 FROM python:3.12-slim
 
 # Install uv (Python package manager)
-ENV PIP_ROOT_USER_ACTION=ignore
-RUN pip install --no-cache-dir uv
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+
+# Allow connections through SSL-inspecting proxies
+ENV UV_INSECURE_HOST="pypi.org,files.pythonhosted.org"
 
 # Copy system requirements
 COPY packages.txt .
