@@ -131,6 +131,8 @@ run-gradio-headless: sync lock clean build up test
 		-p 7860:7860 \
 		-e SANDBOX_API_URL="http://$(CONTAINER_NAME):8000" \
 		-e SANDBOX_API_KEY="sk-mock-key" \
+		-e NO_PROXY="host.containers.internal,$(CONTAINER_NAME)" \
+		-e no_proxy="host.containers.internal,$(CONTAINER_NAME)" \
 		$(ENV_FILE_FLAG) \
 		$(ENV_FORWARD) \
 		--entrypoint uv \

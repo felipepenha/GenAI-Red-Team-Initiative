@@ -105,6 +105,8 @@ run-gradio-headless: sync lock clean ollama-pull ollama-serve build up test test
 		-p 7860:7860 \
 		-e OPENAI_BASE_URL="http://app_container:8000/v1" \
 		-e FLAG="C0ngr4ts_y0u_f0und_m3" \
+		-e NO_PROXY="host.containers.internal,app_container" \
+		-e no_proxy="host.containers.internal,app_container" \
 		--entrypoint uv \
 		app_container_build \
 		run python client/gradio_app.py
